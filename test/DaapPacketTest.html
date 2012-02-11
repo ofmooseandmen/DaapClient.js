@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>DaapPacket.js Unit Tests</title>
+		<script src="http://code.jquery.com/jquery-latest.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/qunit/git/qunit.css" type="text/css" media="screen" />
+		<script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js"></script>
+		<script type="text/javascript" src="../lib/DaapPacket.js"></script>
+		<script type="text/javascript" src="../lib/EndOfPacketException.js"></script>
+		<script>
+            $(document).ready(function() {
+
+                module("DaapPacket");
+
+                test("extract mlog", function() {
+                    var chunk = String.fromCharCode(109, 108, 111, 103, 0, 0, 0, 24, 109, 115, 116, 116, 0, 0, 0, 4, 0, 0, 0, -56, 109, 108, 105, 100, 0, 0, 0, 4, 0, 0, 0, 31);
+                    var packet = new DaapPacket(chunk);
+                    equal(packet.seekFirst("mlid").convertToInt(), 31, "mlid value is 31");
+                    equal(packet.seekFirst("mstt").convertToInt(), 200, "mstt value is 200");
+                });
+
+                test("seek unknown code", function() {
+                    var chunk = String.fromCharCode(109, 108, 111, 103, 0, 0, 0, 24, 109, 115, 116, 116, 0, 0, 0, 4, 0, 0, 0, -56, 109, 108, 105, 100, 0, 0, 0, 4, 0, 0, 0, 31);
+                    var packet = new DaapPacket(chunk);
+                    equal(packet.seekFirst("other"), null, "other code does not exits, packet shall be null");
+                });
+
+                test("extract 2 tags mlid", function() {
+                    var chunk = String.fromCharCode(109, 108, 111, 103, 0, 0, 0, 36, 109, 115, 116, 116, 0, 0, 0, 4, 0, 0, 0, -56, 109, 108, 105, 100, 0, 0, 0, 4, 0, 0, 0, 15, 109, 108, 105, 100, 0, 0, 0, 4, 0, 0, 0, 4);
+                    var packet = new DaapPacket(chunk);
+                    var mlids = packet.seek("mlid");
+                    equals(mlids.length, 2);
+                    equal(mlids[0].convertToInt(), 15, "first mlid value is 15");
+                    equal(mlids[1].convertToInt(), 4, "second mlid value is 4");
+                });
+
+                test("construction fails: no header", function() {
+                    var chunk = String.fromCharCode(109, 108, 111, 103, 0);
+                    try {
+                        new DaapPacket(chunk);
+                        ok(false, "Should have thrown an EndOfPacketException exception.")
+                    } catch (e) {
+                        if( e instanceof EndOfPacketException) {
+                            ok(true);
+                        } else {
+                            ok(false, "Should not have thrown an Exception: " + e);
+                        }
+                    }
+                });
+
+                test("construction fails: no data", function() {
+                    var chunk = String.fromCharCode(109, 108, 111, 103, 0, 0, 0, 24);
+                    try {
+                        new DaapPacket(chunk);
+                        ok(false, "Should have thrown an EndOfPacketException exception.")
+                    } catch (e) {
+                        if( e instanceof EndOfPacketException) {
+                            ok(true);
+                        } else {
+                            ok(false, "Should not have thrown an Exception: " + e);
+                        }
+                    }
+                });
+
+            });
+
+		</script>
+	</head>
+	<body>
+		<h1 id="qunit-header">DaapPacket.js Unit Tests</h1>
+		<h2 id="qunit-banner"></h2>
+		<div id="qunit-testrunner-toolbar"></div>
+		<h2 id="qunit-userAgent"></h2>
+		<ol id="qunit-tests"></ol>
+	</body>
+</html>

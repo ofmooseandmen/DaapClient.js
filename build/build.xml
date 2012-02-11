@@ -1,0 +1,60 @@
+<project name="DaapClient.js" default="doc" basedir=".">
+	<description>
+		DaapClient.js Ant build file
+	</description>
+	<property name="lib" location="../lib"/>
+	<property name="dist" location="../dist"/>
+	<property name="api" location="../api"/>
+	<property name="client.file" value="DaapClient.js"/>
+	<property name="client.lib" value="${lib}/${client.file}"/>
+	<property name="client.dist" value="${dist}/${client.file}"/>
+	<property name="js-beautify" value="${basedir}/js-beautify/js-beautify"/>
+	<property name="js-doc" value="${basedir}/jsdoc-toolkit"/>
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp/>
+		<!-- delete dist/api directories -->
+		<delete dir="${dist}" failonerror="false"/>
+		<delete dir="${api}" failonerror="false"/>
+		<!-- Create the dist directory -->
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${api}"/>
+	</target>
+	<target name="build" depends="init">
+		<loadfile property="EndOfPacketException" srcFile="${lib}/EndOfPacketException.js"/>
+		<loadfile property="DaapPacket" srcFile="${lib}/DaapPacket.js"/>
+		<loadfile property="DaapHttpClient" srcFile="${lib}/DaapHttpClient.js"/>
+		<loadfile property="LoginRequestHandler" srcFile="${lib}/LoginRequestHandler.js"/>
+		<loadfile property="UpdateRequestHandler" srcFile="${lib}/UpdateRequestHandler.js"/>
+		<loadfile property="DatabaseRequestHandler" srcFile="${lib}/DatabaseRequestHandler.js"/>
+		<loadfile property="LoginListener" srcFile="${lib}/LoginListener.js"/>
+		<copy file="${client.lib}" todir="${dist}">
+			<filterchain>
+				<replacetokens begintoken="@" endtoken=";">
+					<token key="EndOfPacketException" value="${EndOfPacketException}"/>
+					<token key="DaapPacket" value="${DaapPacket}"/>
+					<token key="DaapHttpClient" value="${DaapHttpClient}"/>
+					<token key="LoginRequestHandler" value="${LoginRequestHandler}"/>
+					<token key="UpdateRequestHandler" value="${UpdateRequestHandler}"/>
+					<token key="DatabaseRequestHandler" value="${DatabaseRequestHandler}"/>
+					<token key="LoginListener" value="${LoginListener}"/>
+				</replacetokens>
+			</filterchain>
+		</copy>
+	</target>
+	<target name="format" depends="build">
+		<exec executable="${js-beautify}" output="${client.dist}">
+			<arg value="${client.dist}"/>
+		</exec>
+	</target>
+	<target name="doc" depends="format">
+		<exec executable="java">
+			<arg value="-jar"/>
+			<arg value="${js-doc}/jsrun.jar"/>
+			<arg value="${js-doc}/app/run.js"/>
+			<arg value="${client.dist}"/>
+			<arg value="-t=${js-doc}/templates/jsdoc"/>
+			<arg value="-d=${api}"/>
+		</exec>
+	</target>
+</project>
