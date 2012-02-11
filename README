@@ -1,0 +1,47 @@
+DaapClient.js: a javascript DAAP Client.
+Since DaapClient.js relies on XmlHttpRequest to connect to the DAAP server, this latter shall allow Cross-Origin Ressource Sharing. If you cannot modify your DAAP server to include Access-Control-Allow-Origin in the response header, consider setting up a proxy such as (apache configuration file example):
+
+"Listen 3690
+
+NameVirtualHost *:3690
+
+
+  ProxyRequests On
+  
+    Order deny,allow
+    Allow from all
+  
+
+  ProxyPass / http://localhost:3689/
+  ProxyPassReverse / http://localhost:3689/
+  Header set Access-Control-Allow-Origin "*"
+  Header set Access-Control-Allow-Methods "GET
+"
+In which case DaapClient shall be constructed with port number 3690
+
+Example of use:
+
+// create the DaapClient, DAAP server IP address = 10.0.1.6; port = 3690.
+var client = new DaapClient("10.0.1.6", 3690);
+
+var streamsFetched = function streamsFetched(code, streams) {
+    if (code == 200) {
+        alert(streams[0].uri);
+    } else {
+        alert("Could not fetch streams: [HTML Status code = " + code + "]");
+    }
+};
+
+var loginCompleted = function loginCompleted(code) {
+    if (code == 200) {
+        client.fetchStreams(streamsFetched);
+    } else if (code == 401) {
+        var passwd = prompt("Enter Password for DAAP server");
+        client.secureLogin(passwd, loginCompleted);
+    } else {
+	       alert("Could not login to the DAAP server: [HTML Status code = " + code + "]");
+    }
+};
+
+// start with unsecure login - no password.
+client.login(loginCompleted);
