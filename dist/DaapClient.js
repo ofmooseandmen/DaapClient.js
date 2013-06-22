@@ -484,7 +484,19 @@ function DaapClient(ip, port) {
         /** @private the callback. */
         var callback = aCallback;
 
-        var fields = ["dmap.itemid", "daap.songformat", "dmap.itemname", "daap.songalbum", "daap.songartist", "daap.songgenre", "daap.songtracknumber"];
+        var fields = [
+            "dmap.itemid",
+            "daap.songformat",
+            "dmap.itemname",
+            "daap.songalbum",
+            "daap.songartist",
+            "daap.songgenre",
+            "daap.songtracknumber",
+            "daap.songtime",
+            "daap.songsize",
+            "daap.songyear",
+            "daap.songbitrate"
+            ];
 
         /**
          * Handle the response of the DAAP server to the database request.
@@ -529,6 +541,10 @@ function DaapClient(ip, port) {
             var album = extractString(mlit, "asal");
             var artist = extractString(mlit, "asar");
             var genre = extractString(mlit, "asgn");
+            var duration = extractInt(mlit, "astm");
+            var size = extractInt(mlit, "assz");
+            var bitrate = extractInt(mlit, "asbr");
+            var year = extractInt(mlit, "asyr");
             var result = {
                 uri: uri,
                 trackNumber: trackNumber,
@@ -536,7 +552,12 @@ function DaapClient(ip, port) {
                 album: album,
                 artist: artist,
                 genre: genre,
-                id: id
+                id: id,
+                duration: duration,
+                size: size,
+                format: songFormat,
+                bitrate: (bitrate >> 16),
+                year: (year >> 16)
             };
             return result;
         }
